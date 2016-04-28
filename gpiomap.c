@@ -7,6 +7,17 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#define MEMLEN 0x3C
+
+#define PIN_LED 7
+#define PIN_GREEN 17
+#define PIN_INTENSITY 27
+#define PIN_HSYNC 23
+#define PIN_VSYNC 24
+
+#define WAIT_VSYNC 833
+#define WAIT_STRIPE 8333
+
 int main(void)
 {
 	int fd;
@@ -14,23 +25,34 @@ int main(void)
 
 	fd = open("/dev/gpiomem", O_RDWR);
 	if (fd == -1) {
-		fprintf(stderr, "Failed to open /dev/gpiomem\n");
+		perror("Failed to open /dev/gpiomem");
 	}
 
-	gpiomem = mmap(NULL, 0x3C, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	gpiomem = mmap(NULL, MEMLEN, PROT_WRITE, MAP_SHARED, fd, 0);
 	if (gpiomem == MAP_FAILED) {
-		fprintf(stderr, "Failed to mmap /dev/gpiomem\n");
+		perror("Failed to mmap /dev/gpiomem");
 	}
 
-	/* set pin 7 as an output */
+	/* set pins as outputs */
 	gpiomem[0] = 1 << 21;
-	/* set pin 7 to output up */
-	gpiomem[7] = 1 << 7;
+	gpiomem[1] = 1 << 21;
+	gpiomem[2] = (1 << 21) | (1 << 12) | (1 << 9);
+	/* set pins to output up */
+	gpiomem[7] = (1 << PIN_LED) | (1 << PIN_GREEN) | (1 << PIN_INTENSITY) | (1 << PIN_VSYNC) | (1 << PIN_HSYNC);
 
-	sleep(5);
-	msync(gpiomem, 0x3C, MS_SYNC);
-	printf("Called msync\n");
-	sleep(5);
+	while (1) {
+		/* Clear green */
+		gpiomem[10] = 1 << PIN_GREEN;
+		usleep(WAIT_STRIPE);
+		/* Set green */
+		gpiomem[7] = 1 << PIN_GREEN;
+		usleep(WAIT_STRIPE);
+
+		gpiomem[10] = 1 << PIN_VSYNC;
+		usleep(WAIT_VSYNC);
+		gpiomem[7] = 1 << PIN_VSYNC;
+
+	}
 
 	return EXIT_SUCCESS;
 }
