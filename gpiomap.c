@@ -28,15 +28,16 @@ int main(void)
 		perror("Failed to open /dev/gpiomem");
 	}
 
+
 	gpiomem = mmap(NULL, MEMLEN, PROT_WRITE, MAP_SHARED, fd, 0);
 	if (gpiomem == MAP_FAILED) {
 		perror("Failed to mmap /dev/gpiomem");
 	}
 
 	/* set pins as outputs */
-	gpiomem[0] = 1 << 21;
-	gpiomem[1] = 1 << 21;
-	gpiomem[2] = (1 << 21) | (1 << 12) | (1 << 9);
+	gpiomem[0] |= 1 << 21;
+	gpiomem[1] |= 1 << 21;
+	gpiomem[2] |= (1 << 21) | (1 << 12) | (1 << 9);
 	/* set pins to output up */
 	gpiomem[7] = (1 << PIN_LED) | (1 << PIN_GREEN) | (1 << PIN_INTENSITY) | (1 << PIN_VSYNC) | (1 << PIN_HSYNC);
 
