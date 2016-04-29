@@ -36,7 +36,25 @@ orr r1, #PIN_HSYNC
 str r1, [r0, #GPSET0]
 
 mov r1, #PIN_GREEN
-str r1, [r0, #GPCLR0]
+mov r3, #PIN_VSYNC
+loop:
+	str r1, [r0, #GPCLR0]
+	ldr r2, =32407
+	bl sleep
 
-loop$:
-b loop$
+	str r1, [r0, #GPSET0]
+	ldr r2, =32407
+	bl sleep
+
+	str r3, [r0, #GPCLR0]
+	ldr r2, =3240
+	bl sleep
+	str r3, [r0, #GPSET0]
+
+b loop
+
+sleep:
+	sub r2, #1
+	cmp r2, #0
+	bne sleep
+	bx lr
