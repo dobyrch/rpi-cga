@@ -10,6 +10,10 @@
 .set PIN_INTENSITY, 0x08000000
 .set PIN_HSYNC,     0x00800000
 .set PIN_VSYNC,     0x01000000
+/*
+156.25 nanoseconds per pixel
+4 ns per instruction at 250 MHz
+*/
 
 ldr r0, =GPIO_BASE
 
